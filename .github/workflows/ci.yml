@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run tests (stdlib only, no install needed)
+        run: python -m unittest discover -s tests -v
+      - name: Run worked example
+        run: |
+          python -m inference_shape_advisor \
+            --requests-per-day 20000 \
+            --avg-input-tokens 800 \
+            --avg-output-tokens 300 \
+            --active-minutes-per-day 240 \
+            --bursts-per-day 40 \
+            --gpu H100 \
+            --latency-target-s 2 \
+            --out /tmp/report.md
+          test -s /tmp/report.md
